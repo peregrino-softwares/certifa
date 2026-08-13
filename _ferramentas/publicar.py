@@ -286,16 +286,21 @@ def atualizar_cache_bust():
     build = hashlib.sha256(partes).hexdigest()[:10]
 
     padrao = re.compile(r'\?v=[0-9a-fA-F]+')
-    for nome_arq in ('index.html', '404.html'):
-        caminho = os.path.join(RAIZ, nome_arq)
-        if not os.path.exists(caminho):
-            continue
-        with open(caminho, encoding='utf-8') as f:
-            conteudo = f.read()
-        novo = padrao.sub('?v=' + build, conteudo)
-        if novo != conteudo:
-            with open(caminho, 'w', encoding='utf-8', newline='\n') as f:
-                f.write(novo)
+
+    # index.html e a fonte da verdade. 404.html precisa ser byte a byte
+    # identico a ele (e o mesmo app, so entregue quando o GitHub Pages nao
+    # acha a rota) — por isso e derivado AQUI a partir do index.html ja
+    # atualizado, em vez de ter seu proprio ?v= regexado separadamente.
+    # Editar 404.html a mao e um erro facil de cometer; assim ele nunca
+    # diverge, mesmo que eu mexa no index.html sem lembrar do 404.
+    caminho_index = os.path.join(RAIZ, 'index.html')
+    with open(caminho_index, encoding='utf-8') as f:
+        conteudo_index = f.read()
+    conteudo_index = padrao.sub('?v=' + build, conteudo_index)
+    with open(caminho_index, 'w', encoding='utf-8', newline='\n') as f:
+        f.write(conteudo_index)
+    with open(os.path.join(RAIZ, '404.html'), 'w', encoding='utf-8', newline='\n') as f:
+        f.write(conteudo_index)
 
     sw = os.path.join(RAIZ, 'sw.js')
     if os.path.exists(sw):

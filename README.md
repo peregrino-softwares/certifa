@@ -1,7 +1,7 @@
 # Certifa — Simulador do Exame de Agente de Futebol FIFA
 
-**Versão 2.3** — cache-busting automático a cada publicação, recebimento por Pix (Banco do Brasil),
-licença nominal, banco criptografado.
+**Versão 2.4** — SEO (sitemap, Open Graph, dados estruturados), cache-busting automático,
+recebimento por Pix (Banco do Brasil), licença nominal, banco criptografado.
 
 Plataforma de preparação para o **FIFA Football Agent Exam** no formato exato da prova real:
 20 questões, 60 minutos, uma ou mais alternativas corretas por questão e correção **tudo ou nada**.
@@ -288,6 +288,45 @@ Não pode aparecer nada de `_pesquisa/`, `_versoes/`, `chave-mestra.json` nem `d
 
 ---
 
+## 4A. Por que o site não aparece no Google ainda, e o que fazer
+
+Um site novo não é achado por busca automaticamente. Publicar não é o mesmo que ser indexado —
+isso é normal, não é bug, e leva de alguns dias a algumas semanas mesmo fazendo tudo certo.
+
+**O que já está pronto no projeto:**
+
+- `robots.txt` e `sitemap.xml`, na raiz, dizendo ao Google que o site existe e pode ser rastreado.
+- Open Graph e Twitter Card no `<head>` do `index.html` — é o que faz o link aparecer com imagem e
+  descrição quando colado no WhatsApp, Instagram, LinkedIn, em vez de um texto pelado.
+- `assets/img/og-cover.png` — a imagem de capa gerada para esse preview (1200×630).
+- Dados estruturados (`schema.org/Course`) — ajuda o Google a entender que é um curso pago, com
+  preço, e a eventualmente mostrar isso no resultado de busca.
+
+**O que só você faz, porque exige conta/pagamento em nome próprio:**
+
+1. **Google Search Console** (grátis) — cadastre `https://peregrino-softwares.github.io/certifa/`
+   em [search.google.com/search-console](https://search.google.com/search-console), verifique a
+   propriedade (a opção "Prefixo de URL" com a tag HTML meta funciona sem precisar de domínio
+   próprio) e envie o `sitemap.xml`. Isso não garante indexação rápida, mas é o que mais acelera.
+2. **Domínio próprio.** É o que realmente muda o jogo. `peregrino-softwares.github.io/certifa` é
+   difícil de lembrar e o Google trata subdomínio de plataforma (github.io) como menos confiável que
+   domínio próprio. Um `.com.br` custa por volta de R$ 40/ano num registrador (Registro.br,
+   HostGator, etc.), e dá para apontá-lo para o GitHub Pages sem mudar nada no código — só criar um
+   arquivo `CNAME` na raiz e configurar dois registros DNS. Se quiser, eu configuro assim que você
+   tiver o domínio.
+3. **Backlinks.** Um link para o site a partir de qualquer lugar com autoridade — Instagram na bio,
+   grupo do WhatsApp, fórum do nicho — ajuda mais a indexação e o ranqueamento do que qualquer ajuste
+   técnico. Isso o Google Search Console também acelera: quando alguém *pesquisa* o nome do site e
+   *clica* no link, isso sinaliza relevância.
+
+**O que a arquitetura atual limita:** o site é um SPA (aplicativo de página única) — só existe uma
+URL real (`/`), e as seções trocam por JavaScript sem recarregar a página. Isso significa que só a
+tela inicial (a que fica de fora do paywall) é indexável; Simulado, Estudo, Estatísticas etc. nunca
+vão aparecer em busca, porque exigem licença para renderizar qualquer coisa. Não é um problema:
+essas telas não deveriam mesmo aparecer para quem não pagou.
+
+---
+
 ## 5. As 3 questões de demonstração
 
 Ficam fixas na página inicial e são sempre as mesmas: uma com **1** alternativa correta, uma com
@@ -314,6 +353,8 @@ PUBLICADO
   data/demo.js                 as 3 questões da vitrine
   data/pix.js                  Copia e Cola e QR do Pix
   assets/img/pix-qr.png        QR de pagamento (gerado)
+  assets/img/og-cover.png      imagem de preview ao compartilhar o link
+  robots.txt, sitemap.xml      indexação em buscadores
   manifest.webmanifest, sw.js  PWA e cache offline
 
 LOCAL — NUNCA PUBLICAR
@@ -400,6 +441,7 @@ Os PDFs não são redistribuídos: o site linka para os originais no domínio da
 
 | Versão | Data | Mudanças |
 |---|---|---|
+| 2.4 | 13/08/2026 | SEO: `robots.txt`, `sitemap.xml`, Open Graph/Twitter Card com imagem de capa gerada, dados estruturados `schema.org/Course`. `404.html` passa a ser derivado automaticamente de `index.html` a cada publicação, em vez de copiado a mão. Cópia em `_versoes/v2.3-2026-08-13/`. |
 | 2.3 | 13/08/2026 | Cache-busting automático: cada publicação gera um `?v=` novo em todos os assets, corrigindo o atraso de até 10 min entre revogar um código e o bloqueio valer para quem já visitou o site. Site zerado de códigos de teste, pronto para venda real. |
 | 2.2 | 13/08/2026 | Recebimento por Pix com QR Code e Copia e Cola gerados no build, valor embutido, botão de comprovante por WhatsApp ou e-mail. |
 | 2.1 | 13/08/2026 | Licenças nominais com carimbo do titular em todas as telas; preço por região (InfinitePay em reais + internacional em dólar); bloco de credibilidade com afirmações verificáveis e espaço reservado para prova social real. |
