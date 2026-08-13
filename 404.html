@@ -1,0 +1,535 @@
+<!DOCTYPE html>
+<html lang="pt-BR" data-theme="auto">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Certifa — Simulador do Exame de Agente de Futebol FIFA</title>
+<meta name="description" content="Simulador completo do FIFA Football Agent Exam: 20 questoes, 60 minutos, correcao tudo-ou-nada, com fundamentacao nos regulamentos oficiais e traducao em PT-BR, EN, ES e FR.">
+<meta name="color-scheme" content="light dark">
+<meta name="theme-color" content="#0b6b4f">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="assets/img/favicon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="assets/img/icon-192.png">
+<link rel="stylesheet" href="assets/css/app.css?v=4">
+</head>
+<body>
+
+<a class="skip-link" href="#main" data-i18n="a11y.skip">Ir para o conteudo</a>
+
+<!-- ══════════════════════════ HEADER ══════════════════════════ -->
+<header class="topbar" id="topbar">
+  <div class="topbar__inner">
+    <a class="brand" href="#/" aria-label="Certifa">
+      <svg class="brand__mark" viewBox="0 0 32 32" aria-hidden="true">
+        <circle cx="16" cy="16" r="14" fill="none" stroke="currentColor" stroke-width="2"/>
+        <path d="M16 6.5l6.2 4.5-2.4 7.3h-7.6L9.8 11z" fill="currentColor"/>
+        <path d="M16 2.5v4M27.5 11l-3.8 2.8M23.7 25.3l-2.4-7M8.3 25.3l2.4-7M4.5 11l3.8 2.8"
+              stroke="currentColor" stroke-width="1.6" fill="none" stroke-linecap="round"/>
+      </svg>
+      <span class="brand__text"><b>Certifa</b><em data-i18n="brand.sub">Football Agent Exam</em></span>
+    </a>
+
+    <nav class="mainnav" id="mainnav" aria-label="Principal">
+      <a href="#/"           data-route="home"    data-i18n="nav.home">Inicio</a>
+      <a href="#/simulado"   data-route="exam"    data-i18n="nav.exam">Simulado</a>
+      <a href="#/estudo"     data-route="study"   data-i18n="nav.study">Estudo</a>
+      <a href="#/revisao"    data-route="review"  data-i18n="nav.review">Revisao</a>
+      <a href="#/estatisticas" data-route="stats" data-i18n="nav.stats">Estatisticas</a>
+      <a href="#/documentos" data-route="docs"    data-i18n="nav.docs">Documentos</a>
+    </nav>
+
+    <div class="topbar__tools">
+      <div class="langswitch" role="group" aria-label="Idioma da interface">
+        <button type="button" data-uilang="pt" title="Portugues (Brasil)">PT</button>
+        <button type="button" data-uilang="es" title="Espanol">ES</button>
+        <button type="button" data-uilang="en" title="English (US)">EN</button>
+        <button type="button" data-uilang="fr" title="Francais">FR</button>
+      </div>
+      <button class="iconbtn" id="themeBtn" type="button" aria-label="Tema" title="Tema">
+        <svg viewBox="0 0 24 24" aria-hidden="true" class="ico-sun"><circle cx="12" cy="12" r="4.6" fill="currentColor"/><g stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M12 2.6v2.4M12 19v2.4M2.6 12h2.4M19 12h2.4M5.3 5.3l1.7 1.7M17 17l1.7 1.7M18.7 5.3L17 7M7 17l-1.7 1.7"/></g></svg>
+        <svg viewBox="0 0 24 24" aria-hidden="true" class="ico-moon"><path d="M20 14.4A8.6 8.6 0 019.6 4a8.6 8.6 0 100 17 8.6 8.6 0 0010.4-6.6z" fill="currentColor"/></svg>
+      </button>
+      <button class="iconbtn burger" id="burger" type="button" aria-label="Menu" aria-expanded="false">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><g stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 7h16M4 12h16M4 17h16"/></g></svg>
+      </button>
+    </div>
+  </div>
+
+  <!-- Barra de exame (visivel apenas durante o simulado) -->
+  <div class="exambar" id="exambar" hidden>
+    <div class="exambar__inner">
+      <div class="clock" id="clock" role="timer" aria-live="off">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="13" r="8.4" fill="none" stroke="currentColor" stroke-width="1.9"/><path d="M12 8.6V13l3 1.8M9 2.6h6" stroke="currentColor" stroke-width="1.9" fill="none" stroke-linecap="round"/></svg>
+        <span id="clockText">60:00</span>
+      </div>
+      <div class="exambar__meta">
+        <span class="pill" id="answeredPill">0/20</span>
+        <span class="pill pill--flag" id="flagPill" hidden>0</span>
+      </div>
+      <div class="exambar__actions">
+        <button class="btn btn--ghost btn--sm" id="calcToggle" type="button" data-i18n="exam.calculator">Calculadora</button>
+        <button class="btn btn--ghost btn--sm" id="navToggle" type="button" data-i18n="exam.navigator">Navegador</button>
+        <button class="btn btn--primary btn--sm" id="submitExam" type="button" data-i18n="exam.submit">Entregar</button>
+      </div>
+    </div>
+    <div class="exambar__progress"><i id="examProgress"></i></div>
+  </div>
+</header>
+
+<!-- ══════════════════════════ MAIN ══════════════════════════ -->
+<main id="main" class="main">
+
+  <!-- ─────────── HOME (unica area publica) ─────────── -->
+  <section class="view" id="view-home" hidden>
+
+    <div class="hero">
+      <div class="hero__text">
+        <p class="eyebrow" data-i18n="home.eyebrow">Preparacao independente</p>
+        <h1 data-i18n="home.title">Treine no formato exato da prova da FIFA.</h1>
+        <p class="lede" data-i18n="home.lede">20 questoes. 60 minutos. Uma ou mais alternativas corretas por questao, sem meio ponto. Correcao com fundamentacao artigo por artigo nos regulamentos oficiais.</p>
+        <div class="hero__cta">
+          <a class="btn btn--primary btn--lg" href="#acesso" data-preco="home.cta">Liberar acesso</a>
+          <a class="btn btn--outline btn--lg" href="#demo" data-i18n="home.ctaDemo">Testar 3 questoes gratis</a>
+        </div>
+        <p class="microcopy" data-i18n="home.disclaimer">Material de estudo independente. Nao afiliado, patrocinado ou endossado pela FIFA.</p>
+      </div>
+      <aside class="hero__card">
+        <h2 data-i18n="home.factsTitle">A prova real</h2>
+        <dl class="facts">
+          <div><dt data-i18n="facts.q">Questoes</dt><dd>20</dd></div>
+          <div><dt data-i18n="facts.t">Duracao</dt><dd>60 min</dd></div>
+          <div><dt data-i18n="facts.p">Nota de corte</dt><dd>75% (15/20)</dd></div>
+          <div><dt data-i18n="facts.w">Peso por questao</dt><dd>5%</dd></div>
+          <div><dt data-i18n="facts.s">Correcao</dt><dd data-i18n="facts.sv">Tudo ou nada</dd></div>
+          <div><dt data-i18n="facts.b">Formato</dt><dd data-i18n="facts.bv">Livro aberto, online</dd></div>
+        </dl>
+        <p class="hero__note" data-i18n="home.langNote">A prova oficial e aplicada em ingles, frances, alemao ou espanhol — nao ha versao em portugues. Por isso este simulador tem modo bilingue.</p>
+      </aside>
+    </div>
+
+    <!-- barra de estado da licenca -->
+    <div class="licbar licbar--on" id="licBarOn" hidden>
+      <div>
+        <strong data-i18n="lic.onTitle">Acesso liberado neste navegador</strong>
+        <p class="muted small" id="licBarCode"></p>
+      </div>
+      <div class="licbar__acts">
+        <a class="btn btn--primary btn--sm" href="#/simulado" data-i18n="lic.goExam">Ir para o simulado</a>
+        <button class="btn btn--ghost btn--sm" id="licLogout" data-i18n="lic.logout">Sair</button>
+      </div>
+    </div>
+
+    <!-- painel do aluno: so aparece com licenca ativa -->
+    <div id="homePanel" hidden>
+      <div class="grid grid--3">
+        <article class="card card--stat">
+          <h3 data-i18n="home.readiness">Indice de prontidao</h3>
+          <div class="gauge" id="readinessGauge"><svg viewBox="0 0 120 68" aria-hidden="true"><path class="gauge__bg" d="M10 62a50 50 0 0 1 100 0"/><path class="gauge__fg" id="gaugePath" d="M10 62a50 50 0 0 1 100 0"/></svg><b id="readinessVal">—</b></div>
+          <p class="muted small" id="readinessHint" data-i18n="home.readinessHint">Faca um simulado para calcular.</p>
+        </article>
+        <article class="card">
+          <h3 data-i18n="home.nextWindow">Proxima janela de exame</h3>
+          <div class="countdown" id="countdown"><span data-unit="d">—</span><span data-unit="h">—</span><span data-unit="m">—</span></div>
+          <p class="muted small" id="countdownLabel"></p>
+        </article>
+        <article class="card">
+          <h3 data-i18n="home.lastAttempts">Ultimas tentativas</h3>
+          <ul class="attempts" id="lastAttempts"><li class="muted small" data-i18n="home.noAttempts">Nenhuma tentativa ainda.</li></ul>
+        </article>
+      </div>
+      <h2 class="section-title" data-i18n="home.coverage">Cobertura por modulo</h2>
+      <div class="modules" id="moduleBars"></div>
+    </div>
+
+    <!-- ═════════ O QUE E, ITEM POR ITEM ═════════ -->
+    <h2 class="section-title" id="funcoes" data-i18n="home.whatTitle">O que voce recebe, item por item</h2>
+    <p class="lede" data-i18n="home.whatLede">Sao seis ferramentas. Cada uma resolve um problema diferente de quem vai prestar o exame.</p>
+
+    <div class="feats" id="featsList">
+      <article class="feat">
+        <div class="feat__ico" aria-hidden="true">1</div>
+        <div class="feat__body">
+          <h3 data-i18n="feat.1t">Simulado cronometrado</h3>
+          <p data-i18n="feat.1d">Vinte questoes sorteadas do banco, numa unica pagina rolavel, com cronometro de 60 minutos que nao pode ser pausado. E a copia do que voce vai encontrar: mesma quantidade, mesmo tempo, mesma nota de corte.</p>
+          <p class="feat__use"><b data-i18n="feat.forWhat">Para que serve:</b> <span data-i18n="feat.1u">descobrir se voce termina no tempo. A maioria dos reprovados sabe a materia e perde o relogio.</span></p>
+        </div>
+      </article>
+
+      <article class="feat">
+        <div class="feat__ico" aria-hidden="true">2</div>
+        <div class="feat__body">
+          <h3 data-i18n="feat.2t">Correcao tudo ou nada, fundamentada</h3>
+          <p data-i18n="feat.2d">Cada questao pode ter uma, duas, tres ou quatro alternativas corretas. Marcou so parte, vale zero — e assim que a FIFA corrige. No fim, cada alternativa recebe uma justificativa propria dizendo por que esta certa ou errada, com o artigo oficial citado e link direto para o PDF da FIFA.</p>
+          <p class="feat__use"><b data-i18n="feat.forWhat">Para que serve:</b> <span data-i18n="feat.2u">parar de errar por marcar de menos, e aprender o artigo em vez de decorar a resposta.</span></p>
+        </div>
+      </article>
+
+      <article class="feat">
+        <div class="feat__ico" aria-hidden="true">3</div>
+        <div class="feat__body">
+          <h3 data-i18n="feat.3t">Modo bilingue lado a lado</h3>
+          <p data-i18n="feat.3d">A prova oficial nao existe em portugues. Aqui voce le o enunciado no idioma em que vai prestar — espanhol, ingles ou frances — e, com um clique, ve a mesma questao e as mesmas alternativas em portugues, sem sair da tela. Interface e banco completos nos quatro idiomas.</p>
+          <p class="feat__use"><b data-i18n="feat.forWhat">Para que serve:</b> <span data-i18n="feat.3u">aprender o vocabulario juridico que vai cair na prova, em vez de traduzir no susto no dia.</span></p>
+        </div>
+      </article>
+
+      <article class="feat">
+        <div class="feat__ico" aria-hidden="true">4</div>
+        <div class="feat__body">
+          <h3 data-i18n="feat.4t">Calculadora tecnica</h3>
+          <p data-i18n="feat.4d">Tres abas. A comum, com fita e teclado. A de comissao, que aplica o teto do art. 15 do FFAR com a faixa progressiva correta. E a de solidariedade, que reparte os 5% do Anexo 5 do RSTP ano a ano, de 12 a 23 anos.</p>
+          <p class="feat__use"><b data-i18n="feat.forWhat">Para que serve:</b> <span data-i18n="feat.4u">responder questao de calculo em segundos, sem errar a faixa de percentual sob pressao.</span></p>
+        </div>
+      </article>
+
+      <article class="feat">
+        <div class="feat__ico" aria-hidden="true">5</div>
+        <div class="feat__body">
+          <h3 data-i18n="feat.5t">Estudo por modulo e deck de revisao</h3>
+          <p data-i18n="feat.5d">Sem cronometro, escolhendo o regulamento e a quantidade, com fundamentacao imediata a cada questao. O que voce errar entra num deck que devolve a questao em intervalos crescentes; dois acertos seguidos e ela sai.</p>
+          <p class="feat__use"><b data-i18n="feat.forWhat">Para que serve:</b> <span data-i18n="feat.5u">atacar o ponto fraco em vez de refazer a prova inteira toda vez.</span></p>
+        </div>
+      </article>
+
+      <article class="feat">
+        <div class="feat__ico" aria-hidden="true">6</div>
+        <div class="feat__body">
+          <h3 data-i18n="feat.6t">Estatisticas e indice de prontidao</h3>
+          <p data-i18n="feat.6d">Historico de simulados, acerto por modulo e o ranking dos artigos que mais te derrubam. O indice de prontidao pondera as ultimas tentativas e desconta amostra pequena, entao ele nao te engana depois de um unico acerto de sorte.</p>
+          <p class="feat__use"><b data-i18n="feat.forWhat">Para que serve:</b> <span data-i18n="feat.6u">saber se ja da para marcar a prova, com numero em vez de sensacao.</span></p>
+        </div>
+      </article>
+    </div>
+
+    <div class="callout">
+      <strong data-i18n="home.extraTitle">Ainda incluso</strong>
+      <p data-i18n="home.extraBody">Sorteio ponderado como o do exame (cerca de 40% FFAR, 30% RSTP, 30% os demais); atalhos para os PDFs oficiais da FIFA; tema claro e escuro; funciona no celular; funciona offline depois da primeira visita; e seu progresso pode ser exportado e levado para outro computador.</p>
+    </div>
+
+    <!-- ═════════ POR QUE CONFIAR ═════════ -->
+    <h2 class="section-title" data-i18n="home.trustTitle">Por que confiar neste material</h2>
+    <div class="grid grid--4" id="trustList"></div>
+
+    <!-- Prova social real. Fica oculto ate PROVA_SOCIAL ser preenchido em app.js. -->
+    <section id="socialProof" hidden></section>
+
+    <!-- ═════════ DEMONSTRACAO ═════════ -->
+    <h2 class="section-title" id="demo" data-i18n="home.demoTitle">Experimente agora, de graca</h2>
+    <p class="lede" data-i18n="home.demoLede">Tres questoes reais do banco, sempre estas mesmas. A primeira tem uma alternativa correta, a segunda tem duas e a terceira tem tres — exatamente a variacao que voce vai enfrentar. Marque e confira.</p>
+    <div class="qlist qlist--study" id="demoList"></div>
+    <div class="demofoot">
+      <p data-i18n="home.demoAfter">Foi assim que o simulado corrige as 20 questoes, com a fundamentacao e o artigo de cada alternativa.</p>
+      <a class="btn btn--primary btn--lg" href="#acesso" data-i18n="home.demoCta">Quero o banco completo</a>
+    </div>
+
+    <!-- ═════════ ACESSO / PAGAMENTO ═════════ -->
+    <h2 class="section-title" id="acesso" data-i18n="home.buyTitle">Liberar o acesso completo</h2>
+    <div class="paywall">
+      <div class="price">
+        <div class="price__tag"><b>—</b><small data-i18n="price.once">pagamento unico</small></div>
+        <ul class="price__list">
+          <li data-i18n="price.i1">Banco completo de questoes, nos 4 idiomas</li>
+          <li data-i18n="price.i2">Simulados ilimitados no formato oficial</li>
+          <li data-i18n="price.i3">Correcao fundamentada artigo por artigo</li>
+          <li data-i18n="price.i4">Calculadora de comissao e solidariedade</li>
+          <li data-i18n="price.i5">Estudo por modulo, deck de revisao e estatisticas</li>
+          <li data-i18n="price.i6">Atualizacoes do banco na mesma licenca</li>
+        </ul>
+        <p class="price__note" data-i18n="price.note">Sem assinatura e sem renovacao automatica. A licenca e pessoal e vale enquanto o site estiver no ar.</p>
+      </div>
+
+      <div class="checkout">
+        <h3 data-i18n="buy.payTitle">1. Pagamento</h3>
+        <p class="muted small" data-i18n="buy.payHelp">PayPal ou cartao de credito. Nao e preciso ter conta no PayPal para pagar com cartao.</p>
+        <div id="payArea"></div>
+
+        <h3 class="checkout__step2" data-i18n="buy.codeTitle">2. Codigo de acesso</h3>
+        <p class="muted small" data-i18n="buy.codeHelp">Depois de confirmado o pagamento voce recebe um codigo por e-mail. Digite-o abaixo para liberar o site neste navegador.</p>
+        <form class="codeform" id="codeForm" autocomplete="off">
+          <label class="sr-only" for="codeInput" data-i18n="buy.codeLabel">Codigo de acesso</label>
+          <input type="text" id="codeInput" placeholder="CTF-XXXX-XXXX-XXXX" spellcheck="false"
+                 autocapitalize="characters" maxlength="19" inputmode="text">
+          <button class="btn btn--primary" type="submit" id="codeSubmit" data-i18n="buy.unlock">Liberar</button>
+        </form>
+        <p class="codemsg" id="codeMsg" hidden></p>
+      </div>
+    </div>
+
+    <!-- ═════════ PERGUNTAS FREQUENTES ═════════ -->
+    <h2 class="section-title" data-i18n="home.faqTitle">Perguntas frequentes</h2>
+    <div class="faq" id="faqList"></div>
+
+  </section>
+
+  <!-- ─────────── AREA BLOQUEADA ─────────── -->
+  <section class="view" id="view-locked" hidden>
+    <div class="narrow lockbox">
+      <div class="lockbox__ico" aria-hidden="true">
+        <svg viewBox="0 0 24 24"><rect x="4.5" y="10.5" width="15" height="10.5" rx="2.4" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M8 10.5V7.6a4 4 0 018 0v2.9" fill="none" stroke="currentColor" stroke-width="1.8"/><circle cx="12" cy="15.6" r="1.5" fill="currentColor"/></svg>
+      </div>
+      <h1 data-i18n="locked.title">Area exclusiva de quem tem licenca</h1>
+      <p class="lede" data-i18n="locked.lede">Simulado, estudo, revisao, estatisticas e documentos ficam liberados assim que voce inserir o codigo de acesso. O banco de questoes deste site e publicado criptografado: sem licenca, nem o arquivo pode ser lido.</p>
+      <div class="rowbtns rowbtns--center">
+        <a class="btn btn--primary btn--lg" href="#acesso" data-preco="locked.buy">Liberar acesso</a>
+        <a class="btn btn--outline" href="#demo" data-i18n="locked.demo">Ver as 3 questoes gratis</a>
+      </div>
+    </div>
+  </section>
+
+  <!-- ─────────── SETUP DO SIMULADO ─────────── -->
+  <section class="view" id="view-setup" hidden>
+    <div class="narrow">
+      <h1 data-i18n="setup.title">Configurar simulado</h1>
+      <p class="lede" data-i18n="setup.lede">Depois de iniciar, o cronometro de 60 minutos nao pode ser pausado — igual ao exame oficial.</p>
+
+      <div class="card">
+        <h3 data-i18n="setup.langTitle">Idioma da prova</h3>
+        <p class="muted small" data-i18n="setup.langHelp">Escolha o idioma em que voce vai prestar o exame oficial. As questoes serao exibidas nele.</p>
+        <div class="chips" id="examLangChips" role="group">
+          <button type="button" data-examlang="es">Espanol</button>
+          <button type="button" data-examlang="en">English</button>
+          <button type="button" data-examlang="fr">Francais</button>
+          <button type="button" data-examlang="pt">Portugues (BR)</button>
+        </div>
+      </div>
+
+      <div class="card">
+        <h3 data-i18n="setup.transTitle">Painel de traducao</h3>
+        <p class="muted small" data-i18n="setup.transHelp">Idioma de apoio, exibido lado a lado quando voce clicar em "Traduzir" numa questao.</p>
+        <div class="chips" id="transLangChips" role="group">
+          <button type="button" data-translang="pt">Portugues (BR)</button>
+          <button type="button" data-translang="es">Espanol</button>
+          <button type="button" data-translang="en">English</button>
+          <button type="button" data-translang="fr">Francais</button>
+          <button type="button" data-translang="off" data-i18n="setup.transOff">Desligado</button>
+        </div>
+      </div>
+
+      <div class="card">
+        <h3 data-i18n="setup.modeTitle">Rigor</h3>
+        <label class="switch"><input type="checkbox" id="optStrict" checked><span></span><b data-i18n="setup.optStrict">Modo fiel: cronometro travado, sem feedback antes de entregar</b></label>
+        <label class="switch"><input type="checkbox" id="optShuffle" checked><span></span><b data-i18n="setup.optShuffle">Embaralhar alternativas</b></label>
+        <label class="switch"><input type="checkbox" id="optUnseen" checked><span></span><b data-i18n="setup.optUnseen">Priorizar questoes ineditas para mim</b></label>
+        <label class="switch"><input type="checkbox" id="optHideCount"><span></span><b data-i18n="setup.optHideCount">Nao revelar quantas alternativas sao corretas</b></label>
+      </div>
+
+      <div class="callout">
+        <strong data-i18n="setup.tipTitle">Lembre-se</strong>
+        <p data-i18n="setup.tipBody">Nao ha desconto por erro. Deixar em branco vale zero, entao sempre chute. E confira se marcou TODAS as corretas: parcialmente certo tambem vale zero.</p>
+      </div>
+
+      <div class="rowbtns">
+        <button class="btn btn--primary btn--lg" id="beginExam" data-i18n="setup.begin">Comecar — 60:00</button>
+        <a class="btn btn--ghost" href="#/" data-i18n="common.cancel">Cancelar</a>
+      </div>
+    </div>
+  </section>
+
+  <!-- ─────────── SIMULADO ─────────── -->
+  <section class="view view--exam" id="view-exam" hidden>
+    <div class="examlayout">
+      <div class="examlayout__main">
+        <div class="exam-intro card">
+          <h1 data-i18n="exam.title">Simulado oficial — 20 questoes</h1>
+          <p class="muted small" data-i18n="exam.instructions">Uma ou mais alternativas podem estar corretas. Marque todas as corretas. Respostas em branco, parcialmente corretas ou incorretas nao recebem pontos.</p>
+        </div>
+        <form id="examForm" class="qlist"></form>
+        <div class="exam-foot">
+          <button class="btn btn--primary btn--lg" id="submitExam2" type="button" data-i18n="exam.submit">Entregar prova</button>
+        </div>
+      </div>
+      <aside class="examlayout__side" id="examSide">
+        <div class="side-card">
+          <h4 data-i18n="exam.navigator">Navegador</h4>
+          <div class="qnav" id="qnav"></div>
+          <ul class="legend">
+            <li><i class="dot dot--done"></i><span data-i18n="exam.legendDone">Respondida</span></li>
+            <li><i class="dot dot--flag"></i><span data-i18n="exam.legendFlag">Marcada</span></li>
+            <li><i class="dot"></i><span data-i18n="exam.legendTodo">Em branco</span></li>
+          </ul>
+        </div>
+      </aside>
+    </div>
+  </section>
+
+  <!-- ─────────── RESULTADO ─────────── -->
+  <section class="view" id="view-result" hidden>
+    <div class="result-head" id="resultHead"></div>
+    <div class="grid grid--2" id="resultCharts"></div>
+    <div class="review-toolbar">
+      <h2 data-i18n="result.reviewTitle">Revisao questao a questao</h2>
+      <div class="chips chips--sm" id="reviewFilter" role="group">
+        <button type="button" data-filter="all" class="is-on" data-i18n="result.fAll">Todas</button>
+        <button type="button" data-filter="wrong" data-i18n="result.fWrong">Erradas</button>
+        <button type="button" data-filter="right" data-i18n="result.fRight">Certas</button>
+        <button type="button" data-filter="blank" data-i18n="result.fBlank">Em branco</button>
+      </div>
+    </div>
+    <div id="reviewList" class="qlist qlist--review"></div>
+    <div class="rowbtns rowbtns--center">
+      <button class="btn btn--primary" id="retryExam" data-i18n="result.retry">Novo simulado</button>
+      <button class="btn btn--outline" id="addToDeck" data-i18n="result.addDeck">Enviar erros para revisao</button>
+      <a class="btn btn--ghost" href="#/estatisticas" data-i18n="result.toStats">Ver estatisticas</a>
+    </div>
+  </section>
+
+  <!-- ─────────── ESTUDO ─────────── -->
+  <section class="view" id="view-study" hidden>
+    <div class="narrow">
+      <h1 data-i18n="study.title">Estudo por modulo</h1>
+      <p class="lede" data-i18n="study.lede">Sem cronometro. Feedback e fundamentacao imediatos a cada questao.</p>
+      <div class="card">
+        <h3 data-i18n="study.pick">Modulo</h3>
+        <div class="chips chips--wrap" id="studyModules" role="group"></div>
+      </div>
+      <div class="card">
+        <h3 data-i18n="study.qty">Quantidade</h3>
+        <div class="chips" id="studyQty" role="group">
+          <button type="button" data-qty="5">5</button>
+          <button type="button" data-qty="10" class="is-on">10</button>
+          <button type="button" data-qty="20">20</button>
+          <button type="button" data-qty="0" data-i18n="study.all">Tudo</button>
+        </div>
+      </div>
+      <div class="rowbtns"><button class="btn btn--primary btn--lg" id="startStudy" data-i18n="study.start">Comecar</button></div>
+    </div>
+    <div id="studyRunner" class="qlist qlist--study" hidden></div>
+  </section>
+
+  <!-- ─────────── REVISAO (deck de erros) ─────────── -->
+  <section class="view" id="view-review" hidden>
+    <div class="narrow">
+      <h1 data-i18n="review.title">Deck de revisao</h1>
+      <p class="lede" data-i18n="review.lede">Suas questoes erradas voltam aqui em intervalos crescentes. Acertou duas vezes seguidas, sai do deck.</p>
+      <div class="deckstats" id="deckStats"></div>
+      <div class="rowbtns"><button class="btn btn--primary btn--lg" id="startDeck" data-i18n="review.start">Revisar agora</button>
+      <button class="btn btn--ghost" id="clearDeck" data-i18n="review.clear">Esvaziar deck</button></div>
+    </div>
+    <div id="deckRunner" class="qlist qlist--study" hidden></div>
+  </section>
+
+  <!-- ─────────── ESTATISTICAS ─────────── -->
+  <section class="view" id="view-stats" hidden>
+    <h1 data-i18n="stats.title">Estatisticas</h1>
+    <div class="grid grid--4" id="statTiles"></div>
+    <h2 class="section-title" data-i18n="stats.byModule">Desempenho por modulo</h2>
+    <div class="modules" id="statModules"></div>
+    <h2 class="section-title" data-i18n="stats.history">Historico de simulados</h2>
+    <div class="tablewrap"><table class="table" id="historyTable"><thead><tr>
+      <th data-i18n="stats.hDate">Data</th><th data-i18n="stats.hScore">Nota</th><th data-i18n="stats.hPct">%</th>
+      <th data-i18n="stats.hTime">Tempo</th><th data-i18n="stats.hLang">Idioma</th><th data-i18n="stats.hRes">Resultado</th>
+    </tr></thead><tbody></tbody></table></div>
+    <h2 class="section-title" data-i18n="stats.weak">Artigos que mais derrubam voce</h2>
+    <div id="weakArticles" class="taglist"></div>
+    <div class="rowbtns">
+      <button class="btn btn--outline" id="exportData" data-i18n="stats.export">Exportar progresso</button>
+      <label class="btn btn--outline" for="importData" data-i18n="stats.import">Importar progresso</label>
+      <input type="file" id="importData" accept="application/json" hidden>
+      <button class="btn btn--ghost btn--danger" id="resetData" data-i18n="stats.reset">Apagar tudo</button>
+    </div>
+  </section>
+
+  <!-- ─────────── DOCUMENTOS ─────────── -->
+  <section class="view" id="view-docs" hidden>
+    <h1 data-i18n="docs.title">Documentos oficiais</h1>
+    <p class="lede" data-i18n="docs.lede">O exame e de livro aberto eletronico. Conheca a estrutura de cada documento antes da prova — saber onde procurar vale mais do que decorar.</p>
+    <div class="grid grid--2" id="docsGrid"></div>
+    <div class="callout callout--warn">
+      <strong data-i18n="docs.warnTitle">Atencao a versao</strong>
+      <p data-i18n="docs.warnBody">A FIFA atualiza os regulamentos entre as edicoes do exame. Sempre confirme a edicao vigente publicada na plataforma oficial de candidatos antes de estudar.</p>
+    </div>
+  </section>
+
+</main>
+
+<footer class="foot">
+  <div class="foot__inner">
+    <p><b>Certifa</b> — <span data-i18n="foot.tag">simulador independente de preparacao para o exame de agente de futebol.</span></p>
+    <p class="muted small" data-i18n="foot.legal">FIFA e marca registrada da Federation Internationale de Football Association. Este projeto nao possui vinculo, patrocinio ou endosso da FIFA. As questoes sao originais, elaboradas a partir dos regulamentos publicos, e nao reproduzem provas oficiais.</p>
+    <p class="licstamp" id="licStamp" hidden></p>
+    <p class="muted small"><span data-i18n="foot.version">Banco</span>: <span id="bankCount">—</span> <span data-i18n="foot.questions">questoes</span> · <span id="bankRev">v1</span></p>
+  </div>
+</footer>
+
+<!-- ══════════════════════════ CALCULADORA ══════════════════════════ -->
+<div class="calc" id="calc" hidden role="dialog" aria-label="Calculadora">
+  <div class="calc__head">
+    <div class="calc__tabs" role="tablist">
+      <button type="button" data-calctab="std" class="is-on" data-i18n="calc.std">Padrao</button>
+      <button type="button" data-calctab="fee" data-i18n="calc.fee">Comissao</button>
+      <button type="button" data-calctab="sol" data-i18n="calc.sol">Solidariedade</button>
+    </div>
+    <button class="iconbtn iconbtn--sm" id="calcClose" type="button" aria-label="Fechar">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+    </button>
+  </div>
+
+  <div class="calc__pane" data-pane="std">
+    <output class="calc__screen" id="calcScreen">0</output>
+    <div class="calc__tape" id="calcTape"></div>
+    <div class="calc__keys">
+      <button type="button" data-k="C" class="k k--fn">C</button>
+      <button type="button" data-k="back" class="k k--fn">⌫</button>
+      <button type="button" data-k="%" class="k k--fn">%</button>
+      <button type="button" data-k="/" class="k k--op">÷</button>
+      <button type="button" data-k="7" class="k">7</button><button type="button" data-k="8" class="k">8</button>
+      <button type="button" data-k="9" class="k">9</button><button type="button" data-k="*" class="k k--op">×</button>
+      <button type="button" data-k="4" class="k">4</button><button type="button" data-k="5" class="k">5</button>
+      <button type="button" data-k="6" class="k">6</button><button type="button" data-k="-" class="k k--op">−</button>
+      <button type="button" data-k="1" class="k">1</button><button type="button" data-k="2" class="k">2</button>
+      <button type="button" data-k="3" class="k">3</button><button type="button" data-k="+" class="k k--op">+</button>
+      <button type="button" data-k="neg" class="k k--fn">±</button><button type="button" data-k="0" class="k">0</button>
+      <button type="button" data-k="." class="k">.</button><button type="button" data-k="=" class="k k--eq">=</button>
+    </div>
+  </div>
+
+  <div class="calc__pane" data-pane="fee" hidden>
+    <p class="calc__hint" data-i18n="calc.feeHint">Teto de comissao — FFAR art. 15. Faixa progressiva: ate USD 200.000 de remuneracao anual aplica-se o percentual cheio; sobre o excedente, o percentual reduzido.</p>
+    <label class="field"><span data-i18n="calc.remun">Remuneracao anual do jogador (USD)</span><input type="number" id="feeRemun" inputmode="decimal" placeholder="0"></label>
+    <label class="field"><span data-i18n="calc.years">Anos de contrato</span><input type="number" id="feeYears" inputmode="numeric" value="1" min="1" step="1"></label>
+    <label class="field"><span data-i18n="calc.repType">Quem o agente representa</span>
+      <select id="feeRep">
+        <option value="single" data-i18n="calc.repSingle">Jogador OU entidade contratante (5% / 3%)</option>
+        <option value="dual" data-i18n="calc.repDual">Dupla representacao permitida (10% / 6%)</option>
+        <option value="releasing" data-i18n="calc.repRel">Entidade cedente — 10% da compensacao de transferencia</option>
+      </select>
+    </label>
+    <label class="field" id="feeTransferWrap" hidden><span data-i18n="calc.transferFee">Compensacao de transferencia (USD)</span><input type="number" id="feeTransfer" inputmode="decimal" placeholder="0"></label>
+    <div class="calc__out" id="feeOut"></div>
+    <p class="calc__foot" data-i18n="calc.feeFoot">Pagamentos condicionais nao entram no calculo do teto. Verifique o status de suspensao do art. 15 na sua jurisdicao.</p>
+  </div>
+
+  <div class="calc__pane" data-pane="sol" hidden>
+    <p class="calc__hint" data-i18n="calc.solHint">Mecanismo de solidariedade — RSTP, Anexo 5. 5% da compensacao, distribuido entre os clubes formadores: 0,25% por ano dos 12 aos 15 anos e 0,5% por ano dos 16 aos 23.</p>
+    <label class="field"><span data-i18n="calc.compensation">Compensacao de transferencia (USD)</span><input type="number" id="solComp" inputmode="decimal" placeholder="0"></label>
+    <fieldset class="solyears"><legend data-i18n="calc.solYears">Anos civis em que o jogador esteve no clube</legend><div id="solYearsBox"></div></fieldset>
+    <div class="calc__out" id="solOut"></div>
+  </div>
+</div>
+<button class="calcfab" id="calcFab" type="button" aria-label="Calculadora" hidden>
+  <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="2.6" width="16" height="18.8" rx="2.6" fill="none" stroke="currentColor" stroke-width="1.9"/><rect x="7" y="5.6" width="10" height="3.4" rx="1" fill="currentColor"/><g fill="currentColor"><circle cx="8.5" cy="12.6" r="1.15"/><circle cx="12" cy="12.6" r="1.15"/><circle cx="15.5" cy="12.6" r="1.15"/><circle cx="8.5" cy="16.3" r="1.15"/><circle cx="12" cy="16.3" r="1.15"/><circle cx="15.5" cy="16.3" r="1.15"/></g></svg>
+</button>
+
+<!-- ══════════════════════════ MODAL ══════════════════════════ -->
+<div class="modal" id="modal" hidden>
+  <div class="modal__box" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
+    <h3 id="modalTitle"></h3>
+    <div id="modalBody"></div>
+    <div class="modal__actions" id="modalActions"></div>
+  </div>
+</div>
+
+<div class="toast" id="toast" hidden></div>
+
+<script src="assets/js/i18n.js?v=4"></script>
+<script src="data/questions.enc.js?v=4"></script>
+<script src="data/demo.js?v=4"></script>
+<script src="data/licencas.js?v=4"></script>
+<script src="data/pix.js?v=4"></script>
+<script src="assets/js/store.js?v=4"></script>
+<script src="assets/js/access.js?v=4"></script>
+<script src="assets/js/calc.js?v=4"></script>
+<script src="assets/js/engine.js?v=4"></script>
+<script src="assets/js/app.js?v=4"></script>
+</body>
+</html>

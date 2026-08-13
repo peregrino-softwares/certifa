@@ -1,0 +1,28 @@
+# ══════════════════════════════════════════════════════════════
+#  NADA ABAIXO PODE IR PARA O GITHUB.
+#  Cada linha aqui protege o controle de acesso do site.
+# ══════════════════════════════════════════════════════════════
+
+# Banco de questoes em texto puro. Publicar isto entrega as 112 questoes
+# de graca e torna o pagamento inutil.
+_pesquisa/
+
+# Chave mestra do conteudo e todos os codigos de licenca emitidos.
+# Quem tiver este arquivo abre o site inteiro e emite codigos novos.
+_ferramentas/chave-mestra.json
+_ferramentas/codigos-emitidos.txt
+
+# Versoes antigas. A v1.0 guarda o banco em texto puro.
+_versoes/
+
+# Sobra do formato antigo: se este arquivo reaparecer, nao publique.
+data/questions.js
+
+# Sistema
+node_modules/
+.DS_Store
+Thumbs.db
+desktop.ini
+__pycache__/
+*.pyc
+.claude/settings.local.json

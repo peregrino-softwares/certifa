@@ -1,0 +1,18 @@
+{
+  "name": "Certifa — Simulador do Exame de Agente de Futebol FIFA",
+  "short_name": "Certifa",
+  "description": "Simulado no formato oficial: 20 questoes, 60 minutos, correcao tudo-ou-nada, com fundamentacao nos regulamentos e traducao em PT-BR, EN, ES e FR.",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait-primary",
+  "background_color": "#f4f6f8",
+  "theme_color": "#0b6b4f",
+  "lang": "pt-BR",
+  "categories": ["education"],
+  "icons": [
+    { "src": "assets/img/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "assets/img/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "assets/img/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ]
+}

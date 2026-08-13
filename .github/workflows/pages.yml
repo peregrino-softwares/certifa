@@ -1,0 +1,68 @@
+name: Publicar no GitHub Pages
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  # Barreira de seguranca: impede que um commit distraido publique o conteudo
+  # em texto puro ou a chave mestra, o que anularia o controle de acesso.
+  seguranca:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Nenhum arquivo secreto pode estar versionado
+        run: |
+          proibidos=$(git ls-files | grep -E '^(_pesquisa/|_versoes/|data/questions\.js$|_ferramentas/chave-mestra\.json$|_ferramentas/codigos-emitidos\.txt$)' || true)
+          if [ -n "$proibidos" ]; then
+            echo "::error::Arquivos que nunca podem ser publicados foram encontrados no repositorio:"
+            echo "$proibidos"
+            echo "Remova-os com 'git rm --cached <arquivo>' e confira o .gitignore."
+            exit 1
+          fi
+          echo "OK: nenhum arquivo sensivel versionado."
+
+      - name: O banco publicado precisa estar cifrado
+        run: |
+          test -f data/questions.enc.js || { echo "::error::data/questions.enc.js nao existe."; exit 1; }
+          # Se o banco estivesse em claro, estas palavras apareceriam muitas vezes.
+          ocorrencias=$(grep -o -iE '"stem"|"options"|"explain"' data/questions.enc.js | wc -l)
+          if [ "$ocorrencias" -gt 0 ]; then
+            echo "::error::data/questions.enc.js contem texto legivel — o banco nao foi cifrado."
+            exit 1
+          fi
+          echo "OK: banco publicado esta cifrado."
+
+      - name: Precisa haver ao menos uma licenca publicada
+        run: |
+          test -f data/licencas.js || { echo "::error::data/licencas.js nao existe."; exit 1; }
+          if grep -qE '"entries":\[\]' data/licencas.js; then
+            echo "::warning::Nenhuma licenca ativa publicada. Ninguem conseguira liberar o acesso."
+          fi
+          echo "OK."
+
+  publicar:
+    needs: seguranca
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/configure-pages@v5
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: .
+      - id: deployment
+        uses: actions/deploy-pages@v4
