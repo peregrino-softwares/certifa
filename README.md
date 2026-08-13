@@ -1,6 +1,7 @@
 # Certifa — Simulador do Exame de Agente de Futebol FIFA
 
-**Versão 2.2** — recebimento por Pix (Banco do Brasil), licença nominal, banco criptografado.
+**Versão 2.3** — cache-busting automático a cada publicação, recebimento por Pix (Banco do Brasil),
+licença nominal, banco criptografado.
 
 Plataforma de preparação para o **FIFA Football Agent Exam** no formato exato da prova real:
 20 questões, 60 minutos, uma ou mais alternativas corretas por questão e correção **tudo ou nada**.
@@ -243,6 +244,18 @@ python _ferramentas/publicar.py --revogar CTF-AAAA-BBBB-CCCC
 Toda operação recria os arquivos de `data/`. **A revogação só passa a valer depois do push** —
 é a publicação que atualiza a lista de licenças no ar.
 
+### Cache-busting automático
+
+Todo `python _ferramentas/publicar.py` recalcula um hash a partir do conteúdo recém-cifrado e
+reescreve o `?v=...` de **todos** os assets em `index.html`, `404.html` e `sw.js`, além do nome do
+cache do service worker. Isso acontece sozinho, a cada publicação — inclusive quando o banco de
+questões não muda, porque o IV do AES é aleatório e o hash muda junto.
+
+Sem isso, um navegador que visitou o site pouco antes de você revogar um código continuaria
+enxergando a lista de licenças antiga por até 10 minutos (o `Cache-Control` do GitHub Pages), e uma
+licença nova recém-emitida podia não aparecer para quem já tinha a página em cache. Não precisa
+mexer em nada: é automático desde a v2.3.
+
 ### Dois arquivos que você nunca pode perder nem publicar
 
 | Arquivo | Se vazar | Se você perder |
@@ -387,6 +400,7 @@ Os PDFs não são redistribuídos: o site linka para os originais no domínio da
 
 | Versão | Data | Mudanças |
 |---|---|---|
+| 2.3 | 13/08/2026 | Cache-busting automático: cada publicação gera um `?v=` novo em todos os assets, corrigindo o atraso de até 10 min entre revogar um código e o bloqueio valer para quem já visitou o site. Site zerado de códigos de teste, pronto para venda real. |
 | 2.2 | 13/08/2026 | Recebimento por Pix com QR Code e Copia e Cola gerados no build, valor embutido, botão de comprovante por WhatsApp ou e-mail. |
 | 2.1 | 13/08/2026 | Licenças nominais com carimbo do titular em todas as telas; preço por região (InfinitePay em reais + internacional em dólar); bloco de credibilidade com afirmações verificáveis e espaço reservado para prova social real. |
 | 2.0 | 13/08/2026 | Área exclusiva por licença; banco criptografado; página inicial explicativa; 3 questões fixas de demonstração; checkout de US$ 20; ferramenta de emissão e revogação de códigos. |

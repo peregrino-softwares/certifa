@@ -20,7 +20,7 @@ O QUE FICA SO NA SUA MAQUINA (nunca publique):
 Perder `chave-mestra.json` significa perder o acesso ao proprio conteudo publicado
 e ter de reemitir todos os codigos. Faca copia de seguranca dela.
 """
-import argparse, base64, glob, hashlib, hmac, json, os, secrets, sys, datetime
+import argparse, base64, glob, hashlib, hmac, json, os, re, secrets, sys, datetime
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import aes  # noqa: E402
@@ -202,7 +202,14 @@ def publicar(m):
     # 4. dados do Pix (Copia e Cola + QR)
     gerar_pix()
 
-    # 5. remove qualquer resto do banco em texto puro
+    # 5. forca cache-bust: cada publicacao muda a URL de TODOS os assets.
+    # Sem isso, um navegador que visitou o site ha pouco continua servindo
+    # do proprio cache HTTP uma licenca ja revogada, ou nao enxerga uma
+    # licenca nova recem-emitida, por ate 10 minutos (Cache-Control do
+    # GitHub Pages). Isso quebra a garantia de revogacao do paywall.
+    atualizar_cache_bust()
+
+    # 6. remove qualquer resto do banco em texto puro
     antigo = os.path.join(DATA, 'questions.js')
     if os.path.exists(antigo):
         os.remove(antigo)
@@ -259,6 +266,49 @@ def gerar_pix():
     print('  Pix: %s · %s · %s' % (PIX['banco'], pix._ascii(PIX['nome'], 25),
                                    ('R$ %.2f' % valor).replace('.', ',')))
     print('       Copia e Cola com %d caracteres%s' % (len(codigo), ' + QR gerado' if tem_qr else ''))
+
+
+def atualizar_cache_bust():
+    """
+    Troca o `?v=...` de TODOS os assets referenciados em index.html, 404.html
+    e sw.js por um hash derivado do conteudo recem-publicado em data/. Como
+    o AES usa um IV aleatorio a cada cifragem, o hash muda a cada publicacao
+    — mesmo que o banco de questoes nao tenha mudado — entao toda republicacao
+    forca o navegador a buscar tudo de novo, sem depender de eu lembrar de
+    incrementar um numero a mao.
+    """
+    partes = b''
+    for nome_arq in ('questions.enc.js', 'licencas.js', 'pix.js', 'demo.js'):
+        caminho = os.path.join(DATA, nome_arq)
+        if os.path.exists(caminho):
+            with open(caminho, 'rb') as f:
+                partes += f.read()
+    build = hashlib.sha256(partes).hexdigest()[:10]
+
+    padrao = re.compile(r'\?v=[0-9a-fA-F]+')
+    for nome_arq in ('index.html', '404.html'):
+        caminho = os.path.join(RAIZ, nome_arq)
+        if not os.path.exists(caminho):
+            continue
+        with open(caminho, encoding='utf-8') as f:
+            conteudo = f.read()
+        novo = padrao.sub('?v=' + build, conteudo)
+        if novo != conteudo:
+            with open(caminho, 'w', encoding='utf-8', newline='\n') as f:
+                f.write(novo)
+
+    sw = os.path.join(RAIZ, 'sw.js')
+    if os.path.exists(sw):
+        with open(sw, encoding='utf-8') as f:
+            conteudo = f.read()
+        novo = padrao.sub('?v=' + build, conteudo)
+        novo = re.sub(r"var CACHE = 'certifa-[^']*';", "var CACHE = 'certifa-%s';" % build, novo)
+        if novo != conteudo:
+            with open(sw, 'w', encoding='utf-8', newline='\n') as f:
+                f.write(novo)
+
+    print('  Cache-bust: build %s aplicado a index.html, 404.html e sw.js' % build)
+    return build
 
 
 def emitir(m, quantidade, nota, nome='', email=''):
