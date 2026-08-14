@@ -2,21 +2,21 @@
    Assim o usuario sempre recebe a versao mais nova do banco de questoes
    quando esta online, e continua funcionando offline quando nao esta.
    Ao publicar uma alteracao, suba o numero de CACHE. */
-var CACHE = 'certifa-36c562eba4';
+var CACHE = 'certifa-80624cbded';
 var ASSETS = [
   './',
   'index.html',
-  'assets/css/app.css?v=36c562eba4',
-  'assets/js/i18n.js?v=36c562eba4',
-  'assets/js/store.js?v=36c562eba4',
-  'assets/js/access.js?v=36c562eba4',
-  'assets/js/calc.js?v=36c562eba4',
-  'assets/js/engine.js?v=36c562eba4',
-  'assets/js/app.js?v=36c562eba4',
-  'data/questions.enc.js?v=36c562eba4',
-  'data/demo.js?v=36c562eba4',
-  'data/licencas.js?v=36c562eba4',
-  'data/pix.js?v=36c562eba4',
+  'assets/css/app.css?v=80624cbded',
+  'assets/js/i18n.js?v=80624cbded',
+  'assets/js/store.js?v=80624cbded',
+  'assets/js/access.js?v=80624cbded',
+  'assets/js/calc.js?v=80624cbded',
+  'assets/js/engine.js?v=80624cbded',
+  'assets/js/app.js?v=80624cbded',
+  'data/questions.enc.js?v=80624cbded',
+  'data/demo.js?v=80624cbded',
+  'data/licencas.js?v=80624cbded',
+  'data/pix.js?v=80624cbded',
   'assets/img/favicon.svg',
   'assets/img/icon-192.png',
   'assets/img/icon-512.png',
