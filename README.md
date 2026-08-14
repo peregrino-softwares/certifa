@@ -1,7 +1,7 @@
 # Certifa — Simulador do Exame de Agente de Futebol FIFA
 
-**Versão 2.4** — SEO (sitemap, Open Graph, dados estruturados), cache-busting automático,
-recebimento por Pix (Banco do Brasil), licença nominal, banco criptografado.
+**Versão 2.5** — domínio próprio (`certifa.com.br`), SEO (sitemap, Open Graph, dados estruturados),
+cache-busting automático, recebimento por Pix (Banco do Brasil), licença nominal, banco criptografado.
 
 Plataforma de preparação para o **FIFA Football Agent Exam** no formato exato da prova real:
 20 questões, 60 minutos, uma ou mais alternativas corretas por questão e correção **tudo ou nada**.
@@ -301,20 +301,16 @@ isso é normal, não é bug, e leva de alguns dias a algumas semanas mesmo fazen
 - `assets/img/og-cover.png` — a imagem de capa gerada para esse preview (1200×630).
 - Dados estruturados (`schema.org/Course`) — ajuda o Google a entender que é um curso pago, com
   preço, e a eventualmente mostrar isso no resultado de busca.
+- **Domínio próprio** (`certifa.com.br`) em vez de `peregrino-softwares.github.io/certifa` — ver
+  seção 4B logo abaixo.
 
-**O que só você faz, porque exige conta/pagamento em nome próprio:**
+**O que só você faz, porque exige conta em nome próprio:**
 
-1. **Google Search Console** (grátis) — cadastre `https://peregrino-softwares.github.io/certifa/`
-   em [search.google.com/search-console](https://search.google.com/search-console), verifique a
-   propriedade (a opção "Prefixo de URL" com a tag HTML meta funciona sem precisar de domínio
-   próprio) e envie o `sitemap.xml`. Isso não garante indexação rápida, mas é o que mais acelera.
-2. **Domínio próprio.** É o que realmente muda o jogo. `peregrino-softwares.github.io/certifa` é
-   difícil de lembrar e o Google trata subdomínio de plataforma (github.io) como menos confiável que
-   domínio próprio. Um `.com.br` custa por volta de R$ 40/ano num registrador (Registro.br,
-   HostGator, etc.), e dá para apontá-lo para o GitHub Pages sem mudar nada no código — só criar um
-   arquivo `CNAME` na raiz e configurar dois registros DNS. Se quiser, eu configuro assim que você
-   tiver o domínio.
-3. **Backlinks.** Um link para o site a partir de qualquer lugar com autoridade — Instagram na bio,
+1. **Google Search Console** (grátis) — cadastre `https://certifa.com.br/` em
+   [search.google.com/search-console](https://search.google.com/search-console), verifique a
+   propriedade (a opção "Prefixo de URL" com a tag HTML meta é a mais simples) e envie o
+   `sitemap.xml`. Isso não garante indexação rápida, mas é o que mais acelera.
+2. **Backlinks.** Um link para o site a partir de qualquer lugar com autoridade — Instagram na bio,
    grupo do WhatsApp, fórum do nicho — ajuda mais a indexação e o ranqueamento do que qualquer ajuste
    técnico. Isso o Google Search Console também acelera: quando alguém *pesquisa* o nome do site e
    *clica* no link, isso sinaliza relevância.
@@ -324,6 +320,54 @@ URL real (`/`), e as seções trocam por JavaScript sem recarregar a página. Is
 tela inicial (a que fica de fora do paywall) é indexável; Simulado, Estudo, Estatísticas etc. nunca
 vão aparecer em busca, porque exigem licença para renderizar qualquer coisa. Não é um problema:
 essas telas não deveriam mesmo aparecer para quem não pagou.
+
+---
+
+## 4B. Domínio próprio (`certifa.com.br`) — configurar o DNS
+
+O código já está pronto para o domínio: existe um arquivo `CNAME` na raiz com `certifa.com.br`, e
+todas as referências (canonical, Open Graph, sitemap, dados estruturados) apontam para
+`https://certifa.com.br/`. **O que falta é só o DNS**, e isso só você faz — exige entrar no painel
+do registrador onde comprou o domínio, e eu não tenho (nem devo ter) acesso a essa conta.
+
+### O que cadastrar
+
+No painel de DNS do seu domínio (Registro.br, ou o registrador que você usou), crie exatamente
+estes registros:
+
+| Tipo | Nome/Host | Valor | Para quê |
+|---|---|---|---|
+| A | `@` (raiz, às vezes vazio) | `185.199.108.153` | aponta `certifa.com.br` para o GitHub Pages |
+| A | `@` | `185.199.109.153` | idem (redundância) |
+| A | `@` | `185.199.110.153` | idem |
+| A | `@` | `185.199.111.153` | idem |
+| CNAME | `www` | `peregrino-softwares.github.io.` | para `www.certifa.com.br` também funcionar |
+
+Esses quatro IPs são fixos e documentados pelo GitHub — não mudam por site. Se o painel do seu
+registrador não aceitar múltiplos registros A no mesmo host, cadastre os quatro um de cada vez; a
+maioria aceita.
+
+Se o Registro.br não permitir registro tipo A na raiz do jeito que seu plano DNS oferece, você pode
+usar o **DNS do próprio GitHub/Cloudflare** como alternativa — mas o caminho acima funciona na
+maioria dos planos padrão.
+
+### Depois de cadastrar
+
+DNS pode levar de alguns minutos a algumas horas para propagar (às vezes até 24h, incomum mas
+possível). Para conferir se já propagou:
+
+```bash
+nslookup certifa.com.br
+```
+
+Deve devolver um dos quatro IPs acima. Enquanto não propaga, `certifa.com.br` não carrega nada —
+isso é esperado, não é erro no site. O link antigo (`peregrino-softwares.github.io/certifa`)
+continua funcionando em paralelo, então não há corte de acesso nesse meio-tempo.
+
+Assim que o DNS propagar, o GitHub emite um certificado HTTPS automaticamente para o domínio
+(pode levar até algumas horas depois da propagação). Depois disso, confirme em
+**Settings → Pages** do repositório que a opção **Enforce HTTPS** está marcada — normalmente o
+GitHub liga sozinha assim que o certificado fica pronto.
 
 ---
 
@@ -355,6 +399,7 @@ PUBLICADO
   assets/img/pix-qr.png        QR de pagamento (gerado)
   assets/img/og-cover.png      imagem de preview ao compartilhar o link
   robots.txt, sitemap.xml      indexação em buscadores
+  CNAME                        domínio próprio (certifa.com.br)
   manifest.webmanifest, sw.js  PWA e cache offline
 
 LOCAL — NUNCA PUBLICAR
@@ -441,6 +486,7 @@ Os PDFs não são redistribuídos: o site linka para os originais no domínio da
 
 | Versão | Data | Mudanças |
 |---|---|---|
+| 2.5 | 13/08/2026 | Domínio próprio: `CNAME` com `certifa.com.br`, e todas as URLs (canonical, Open Graph, sitemap, dados estruturados) migradas de `peregrino-softwares.github.io/certifa` para `https://certifa.com.br/`. Cópia em `_versoes/v2.4-2026-08-13/`. |
 | 2.4 | 13/08/2026 | SEO: `robots.txt`, `sitemap.xml`, Open Graph/Twitter Card com imagem de capa gerada, dados estruturados `schema.org/Course`. `404.html` passa a ser derivado automaticamente de `index.html` a cada publicação, em vez de copiado a mão. Cópia em `_versoes/v2.3-2026-08-13/`. |
 | 2.3 | 13/08/2026 | Cache-busting automático: cada publicação gera um `?v=` novo em todos os assets, corrigindo o atraso de até 10 min entre revogar um código e o bloqueio valer para quem já visitou o site. Site zerado de códigos de teste, pronto para venda real. |
 | 2.2 | 13/08/2026 | Recebimento por Pix com QR Code e Copia e Cola gerados no build, valor embutido, botão de comprovante por WhatsApp ou e-mail. |
