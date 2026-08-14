@@ -1,2 +1,2 @@
 /* Licencas: hashes e chaves embrulhadas. Nenhum codigo em claro. Gerado por publicar.py. */
-window.CERTIFA_LIC = {"v":1,"iter":210000,"entries":[{"look":"15ce0ca989d757ce","salt":"TKE4Jgo/C0RI2Tg6l1qFKQ==","iv":"LNzGcZ/74A6nT389gYc7lg==","k":"Gs/QQlY+/NsQxPN4CyfVMMAVm/Fb5/KWDi569eAPfr8=","mac":"J3oUiy5FYXGQCG7pMAPMLrSzcQ6tbFvHqQeiq7FkNhg=","t":{"iv":"RdARIaYXYyllODLQZxsAdA==","ct":"Il5bJR0MP3/ieX4ZxjyqCiNCDQ/+s0Cg6Bx/KOe5PvrCPuYBa8VXRhCGh/xUP2OahzoMiwyy","mac":"siHzJwT917f0jCgZbPSHEDX4+x/ptBb89QoQqpw5a+o="}}]};
+window.CERTIFA_LIC = {"v":1,"iter":210000,"entries":[]};
