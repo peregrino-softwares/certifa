@@ -130,6 +130,40 @@
     }).catch(function () { return null; });
   }
 
+  /* ---------- lista de licencas, sempre fresca ---------- */
+  /*
+     A lista precisa ser buscada de novo a cada verificacao, ignorando o cache.
+
+     O GitHub Pages serve tudo com Cache-Control: max-age=600, inclusive o
+     index.html — e nao da para mudar esse cabecalho num site estatico. Sem este
+     fetch com cache:'no-store', um navegador que visitou o site nos ultimos
+     10 minutos continuaria carregando a lista antiga (via a URL ?v= antiga
+     embutida no index.html cacheado), e uma licenca recem-revogada seguiria
+     abrindo o conteudo. Aqui a revogacao passa a valer em segundos.
+
+     Se a rede falhar (offline), caimos na lista embutida por <script>, que e o
+     comportamento correto para quem ja tem acesso legitimo e esta sem internet.
+  */
+  function listaLicencas() {
+    var embutida = w.CERTIFA_LIC;
+    if (!w.fetch) return Promise.resolve(embutida);
+
+    return fetch('data/licencas.js?t=' + Date.now(), { cache: 'no-store' })
+      .then(function (r) {
+        if (!r.ok) throw new Error('http ' + r.status);
+        return r.text();
+      })
+      .then(function (txt) {
+        var i = txt.indexOf('{'), j = txt.lastIndexOf('}');
+        if (i < 0 || j <= i) throw new Error('formato');
+        var obj = JSON.parse(txt.slice(i, j + 1));
+        if (!obj || !Array.isArray(obj.entries)) throw new Error('formato');
+        w.CERTIFA_LIC = obj;
+        return obj;
+      })
+      .catch(function () { return embutida; });
+  }
+
   /* ---------- desbloquear com um codigo ---------- */
   function desbloquear(codigoDigitado) {
     if (!subtle) {
@@ -139,7 +173,7 @@
     var codigo = canonizar(codigoDigitado);
     if (codigo.length < 8) return Promise.reject(new Error('codigo-invalido'));
 
-    var lic = w.CERTIFA_LIC;
+    return listaLicencas().then(function (lic) {
     if (!lic || !lic.entries || !lic.entries.length) return Promise.reject(new Error('sem-licencas'));
 
     return sha256(texto('certifa:lookup|' + codigo)).then(function (h) {
@@ -186,6 +220,7 @@
           });
         });
     });
+    });
   }
 
   /* ---------- retomar sessao ja liberada ---------- */
@@ -195,8 +230,10 @@
     try { salvo = JSON.parse(localStorage.getItem(LS_KEY) || 'null'); } catch (e) { salvo = null; }
     if (!salvo || !salvo.ck) return Promise.resolve(false);
 
-    // a licenca ainda consta na lista publicada? se foi revogada, some daqui.
-    var lic = w.CERTIFA_LIC, aindaVale = false;
+    // Confere na lista fresca, nao na embutida: e aqui que uma licenca revogada
+    // perde o acesso de quem ja estava logado, ao recarregar a pagina.
+    return listaLicencas().then(function (lic) {
+    var aindaVale = false;
     if (lic && lic.entries) {
       for (var i = 0; i < lic.entries.length; i++) {
         if (lic.entries[i].look === salvo.look) { aindaVale = true; break; }
@@ -210,6 +247,7 @@
       estado.titular = salvo.titular || null;
       return true;
     }).catch(function () { sair(); return false; });
+    });
   }
 
   function sair() {
