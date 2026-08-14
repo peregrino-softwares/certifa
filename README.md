@@ -1,6 +1,6 @@
 # Certifa — Simulador do Exame de Agente de Futebol FIFA
 
-**Versão 2.5** — domínio próprio (`certifa.com.br`), SEO (sitemap, Open Graph, dados estruturados),
+**Versão 2.6** — janela para emitir códigos, domínio próprio (`certifa.com.br`), SEO (sitemap, Open Graph, dados estruturados),
 cache-busting automático, recebimento por Pix (Banco do Brasil), licença nominal, banco criptografado.
 
 Plataforma de preparação para o **FIFA Football Agent Exam** no formato exato da prova real:
@@ -225,6 +225,28 @@ cada número que publicar.
 
 ## 3. Gerenciar licenças
 
+### Jeito fácil: a janela (recomendado no dia a dia)
+
+Duplo clique em **`EMITIR CODIGO.bat`**, na pasta do projeto. Abre uma janela com dois campos —
+nome e e-mail do comprador — e um botão.
+
+Ao clicar em *Emitir e publicar*, ela faz tudo sozinha:
+
+1. emite a licença no nome da pessoa
+2. descobre o código gerado
+3. faz commit e push (o passo que faz o código valer no ar)
+4. mostra o código em destaque e já copia para a área de transferência
+
+A janela também lista as licenças ativas e tem um botão para revogar a que estiver selecionada.
+
+**Se o push falhar, ela avisa em vermelho.** Isso importa: um código emitido mas não publicado
+não funciona para o cliente, e é o erro mais fácil de não perceber — você mandaria o código
+achando que estava tudo certo.
+
+### Jeito manual: linha de comando
+
+Mesma coisa, se preferir terminal (a janela é só uma casca em volta disto):
+
 ```bash
 python _ferramentas/publicar.py --novas 1 --nome "Maria Silva" --email "maria@email.com"
 ```
@@ -400,12 +422,14 @@ PUBLICADO
   assets/img/og-cover.png      imagem de preview ao compartilhar o link
   robots.txt, sitemap.xml      indexação em buscadores
   CNAME                        domínio próprio (certifa.com.br)
+  EMITIR CODIGO.bat            atalho que abre a janela de emissão
   manifest.webmanifest, sw.js  PWA e cache offline
 
 LOCAL — NUNCA PUBLICAR
   _pesquisa/bank/*.json        banco em texto puro
   _pesquisa/validar.py         valida os lotes
   _ferramentas/publicar.py     cifra o banco e emite licenças
+  _ferramentas/emitir.pyw      janela grafica de emissao (aberta pelo .bat)
   _ferramentas/aes.py          AES-256-CTR puro (validado no FIPS-197)
   _ferramentas/pix.py          BR Code do Pix + QR (validado no CRC do padrão EMV)
   _ferramentas/chave-mestra.json   CHAVE DO CONTEÚDO + CÓDIGOS
@@ -486,6 +510,7 @@ Os PDFs não são redistribuídos: o site linka para os originais no domínio da
 
 | Versão | Data | Mudanças |
 |---|---|---|
+| 2.6 | 14/08/2026 | Janela gráfica para emitir e revogar licenças (`EMITIR CODIGO.bat`), com push automático e aviso em vermelho se a publicação falhar. Corrige furo na revogação: `index.html` é servido com `max-age=600` pelo GitHub Pages e não dá para mudar esse cabeçalho, então quem visitou o site nos últimos 10 min continuava com um código revogado funcionando; a lista de licenças passa a ser buscada com `cache: no-store` a cada verificação. Cópia em `_versoes/v2.5-2026-08-14/`. |
 | 2.5 | 13/08/2026 | Domínio próprio: `CNAME` com `certifa.com.br`, e todas as URLs (canonical, Open Graph, sitemap, dados estruturados) migradas de `peregrino-softwares.github.io/certifa` para `https://certifa.com.br/`. Cópia em `_versoes/v2.4-2026-08-13/`. |
 | 2.4 | 13/08/2026 | SEO: `robots.txt`, `sitemap.xml`, Open Graph/Twitter Card com imagem de capa gerada, dados estruturados `schema.org/Course`. `404.html` passa a ser derivado automaticamente de `index.html` a cada publicação, em vez de copiado a mão. Cópia em `_versoes/v2.3-2026-08-13/`. |
 | 2.3 | 13/08/2026 | Cache-busting automático: cada publicação gera um `?v=` novo em todos os assets, corrigindo o atraso de até 10 min entre revogar um código e o bloqueio valer para quem já visitou o site. Site zerado de códigos de teste, pronto para venda real. |
